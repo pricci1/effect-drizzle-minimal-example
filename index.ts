@@ -139,7 +139,7 @@ const runExample2 = example2.pipe(
 )
 
 // Execute examples sequentially
-Effect.all([runExample1, runExample2], { concurrency: "unbounded" }).pipe(
+Effect.all([runExample1, runExample2]).pipe(
   Effect.runPromise
 ).then(
   () => console.log("\n✓ All examples completed successfully!"),
