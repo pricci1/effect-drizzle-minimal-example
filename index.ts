@@ -4,6 +4,8 @@ import { eq } from "drizzle-orm"
 import { Effect } from "effect"
 import { DB, SqliteDrizzleLive } from "./db"
 import { posts, users } from "./schema"
+import { UserService, PostService } from "./services"
+import { User, Post } from "./models"
 
 // Example 1: Using raw SQL client + Drizzle ORM together
 const example1 = Effect.gen(function* () {
@@ -131,17 +133,101 @@ const example2 = Effect.gen(function* () {
   console.log("All posts:", allPostsQuery)
 })
 
-// Run both examples
+// Example 3: Effect Schema integration with Drizzle
+const example3 = Effect.gen(function* () {
+  console.log("\n=== Example 3: Effect Schema + Business Logic ===")
+
+  const sql = yield* SqlClient.SqlClient
+  const userService = yield* UserService
+  const postService = yield* PostService
+
+  yield* sql`
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL UNIQUE,
+      created_at INTEGER
+    )
+  `
+
+  yield* sql`
+    CREATE TABLE IF NOT EXISTS posts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      title TEXT NOT NULL,
+      content TEXT,
+      created_at INTEGER,
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+  `
+
+  console.log("✓ Tables created")
+
+  const user1 = yield* userService.createUser({
+    name: "Alice Johnson",
+    email: "alice@example.com"
+  })
+
+  console.log("✓ Created user:", user1)
+
+  const result = yield* Effect.either(
+    userService.createUser({
+      name: "Bob",
+      email: "invalid-email"
+    })
+  )
+
+  if (result._tag === "Left") {
+    console.log("✓ Email validation caught invalid format:", result.left.message)
+  }
+
+  const user2 = yield* userService.createUser({
+    name: "Charlie Brown",
+    email: "charlie@example.com"
+  })
+
+  const post1 = yield* postService.createPost({
+    userId: user1.id,
+    title: "Effect Schema Benefits",
+    content: "Schema validation at compile and runtime!"
+  })
+
+  const post2 = yield* postService.createPost({
+    userId: user1.id,
+    title: "Type Safety",
+    content: null
+  })
+
+  console.log("✓ Created posts:", [post1.title, post2.title])
+
+  const allUsers = yield* userService.listUsers
+  console.log(`✓ All users: ${allUsers.length} users`)
+
+  const userPosts = yield* postService.getPostsByUserId(user1.id)
+  console.log(`✓ Posts by ${user1.name}: ${userPosts.length} posts`)
+
+  console.log("\n--- Schema Types ---")
+  console.log("User fields:", Object.keys(User.fields))
+  console.log("Post fields:", Object.keys(Post.fields))
+})
+
+// Run all examples
 const runExample1 = example1.pipe(Effect.provide(SqliteDrizzleLive))
 
 const runExample2 = example2.pipe(
   Effect.provide(DB.Client)
 )
 
+const runExample3 = example3.pipe(
+  Effect.provide(UserService.Default),
+  Effect.provide(PostService.Default),
+  Effect.provide(DB.Client)
+)
+
 // Execute examples sequentially
-Effect.all([runExample1, runExample2]).pipe(
-  Effect.runPromise
+Effect.runPromise(
+  Effect.all([runExample1, runExample2, runExample3])
 ).then(
   () => console.log("\n✓ All examples completed successfully!"),
-  (error) => console.error("\n✗ Error:", error)
+  (error: unknown) => console.error("\n✗ Error:", error)
 )
