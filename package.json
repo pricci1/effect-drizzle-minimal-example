@@ -1,0 +1,19 @@
+{
+  "name": "effect-drizzle-minimal-example",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@effect/sql": "^0.48.6",
+    "@effect/sql-drizzle": "^0.47.0",
+    "@effect/sql-sqlite-bun": "^0.49.0",
+    "drizzle-orm": "^0.44.7",
+    "effect": "^3.19.8"
+  }
+}
