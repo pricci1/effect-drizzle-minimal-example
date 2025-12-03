@@ -33,21 +33,10 @@ export class Post extends Schema.Class<Post>("Post")({
   static Insert = Post.pipe(Schema.omit("id", "createdAt"))
 }
 
-type AssertUserCompatible = UserRow extends {
-  id: number
-  name: string
-  email: string
-  createdAt: Date | null
-} ? true : "User schema mismatch"
-
-type AssertPostCompatible = PostRow extends {
-  id: number
-  userId: number
-  title: string
-  content: string | null
-  createdAt: Date | null
-} ? true : "Post schema mismatch"
 export const PostInsert = Post.Insert;
 
+type AssertUserCompatible = UserRow extends User ? true : "User schema mismatch"
+
+type AssertPostCompatible = PostRow extends Post ? true : "Post schema mismatch"
 
 export type SchemaAssertions = AssertUserCompatible & AssertPostCompatible
