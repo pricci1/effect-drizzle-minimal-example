@@ -35,8 +35,18 @@ export class Post extends Schema.Class<Post>("Post")({
 
 export const PostInsert = Post.Insert;
 
-type AssertUserCompatible = UserRow extends User ? true : "User schema mismatch"
+// derived from https://github.com/sindresorhus/type-fest
+type Expect<T extends true> = T;
+type IsNever<T> = [T] extends [never] ? true : false;
+type IsAny<T> = 0 extends 1 & NoInfer<T> ? true : false;
+export type ExtendsStrict<Left, Right, Message = false> =
+	IsAny<Left | Right> extends true
+		? true
+		: IsNever<Left> extends true
+			? IsNever<Right>
+			: [Left] extends [Right]
+				? true
+				: Message;
 
-type AssertPostCompatible = PostRow extends Post ? true : "Post schema mismatch"
-
-export type SchemaAssertions = AssertUserCompatible & AssertPostCompatible
+type _test1 = Expect<ExtendsStrict<UserRow, User, "User schema mismatch">>
+type _test2 = Expect<ExtendsStrict<PostRow, Post, "Post schema mismatch">>
