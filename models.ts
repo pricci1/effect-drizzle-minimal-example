@@ -14,15 +14,11 @@ export class User extends Schema.Class<User>("User")({
     Schema.pattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)
   ),
   createdAt: Schema.NullOr(DateFromSelf)
-}) {}
+}) {
+  static Insert = User.pipe(Schema.omit("id", "createdAt"))
+}
 
-export const UserInsert = Schema.Struct({
-  name: Schema.NonEmptyString,
-  email: Schema.String.pipe(
-    Schema.pattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)
-  ),
-  createdAt: Schema.optional(Schema.NullOr(DateFromSelf))
-})
+export const UserInsert = User.Insert;
 
 export class Post extends Schema.Class<Post>("Post")({
   id: Schema.Number,
@@ -33,17 +29,9 @@ export class Post extends Schema.Class<Post>("Post")({
   ),
   content: Schema.NullOr(Schema.String),
   createdAt: Schema.NullOr(DateFromSelf)
-}) {}
-
-export const PostInsert = Schema.Struct({
-  userId: Schema.Number,
-  title: Schema.NonEmptyString.pipe(
-    Schema.minLength(1),
-    Schema.maxLength(255)
-  ),
-  content: Schema.NullOr(Schema.String),
-  createdAt: Schema.optional(Schema.NullOr(DateFromSelf))
-})
+}) {
+  static Insert = Post.pipe(Schema.omit("id", "createdAt"))
+}
 
 type AssertUserCompatible = UserRow extends {
   id: number
@@ -59,5 +47,7 @@ type AssertPostCompatible = PostRow extends {
   content: string | null
   createdAt: Date | null
 } ? true : "Post schema mismatch"
+export const PostInsert = Post.Insert;
+
 
 export type SchemaAssertions = AssertUserCompatible & AssertPostCompatible
