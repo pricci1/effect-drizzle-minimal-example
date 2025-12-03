@@ -1,4 +1,12 @@
-# tmp.yqgbxladeh
+# EffectTS SQL / Drizzle
+
+Just trying out different approaches to SQL with EffectTS and Drizzle ORM.
+
+## Approaches
+
+- **Example 1**: Raw SQL + Drizzle ORM - uses both SqlClient for raw queries and Drizzle for type-safe operations
+- **Example 2**: Schema-aware DB service - uses the DB service with `db.query` API for schema knowledge
+- **Example 3**: Repository pattern with Effect Schema - adds validation and business logic layer
 
 To install dependencies:
 
