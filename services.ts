@@ -4,7 +4,7 @@ import { User, Post, UserInsert, PostInsert } from "./models"
 import { users, posts } from "./schema"
 import { eq } from "drizzle-orm"
 
-export class UserService extends Effect.Service<UserService>()("UserService", {
+export class UserRepositoryService extends Effect.Service<UserRepositoryService>()("UserRepositoryService", {
   effect: Effect.gen(function* () {
     const db = yield* DB
 
@@ -65,7 +65,7 @@ export class UserService extends Effect.Service<UserService>()("UserService", {
   })
 }) {}
 
-export class PostService extends Effect.Service<PostService>()("PostService", {
+export class PostRepositoryService extends Effect.Service<PostRepositoryService>()("PostRepositoryService", {
   effect: Effect.gen(function* () {
     const db = yield* DB
 

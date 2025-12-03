@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm"
 import { Effect } from "effect"
 import { DB, SqliteDrizzleLive } from "./db"
 import { posts, users } from "./schema"
-import { UserService, PostService } from "./services"
+import { UserRepositoryService, PostRepositoryService } from "./services"
 import { User, Post } from "./models"
 
 // Example 1: Using raw SQL client + Drizzle ORM together
@@ -138,8 +138,8 @@ const example3 = Effect.gen(function* () {
   console.log("\n=== Example 3: Effect Schema + Business Logic ===")
 
   const sql = yield* SqlClient.SqlClient
-  const userService = yield* UserService
-  const postService = yield* PostService
+  const userRepositoryService = yield* UserRepositoryService
+  const postRepositoryService = yield* PostRepositoryService
 
   yield* sql`
     CREATE TABLE IF NOT EXISTS users (
@@ -163,7 +163,7 @@ const example3 = Effect.gen(function* () {
 
   console.log("✓ Tables created")
 
-  const user1 = yield* userService.createUser({
+  const user1 = yield* userRepositoryService.createUser({
     name: "Alice Johnson",
     email: "alice@example.com"
   })
@@ -171,7 +171,7 @@ const example3 = Effect.gen(function* () {
   console.log("✓ Created user:", user1)
 
   const result = yield* Effect.either(
-    userService.createUser({
+    userRepositoryService.createUser({
       name: "Bob",
       email: "invalid-email"
     })
@@ -181,18 +181,18 @@ const example3 = Effect.gen(function* () {
     console.log("✓ Email validation caught invalid format:", result.left.message)
   }
 
-  const user2 = yield* userService.createUser({
+  const user2 = yield* userRepositoryService.createUser({
     name: "Charlie Brown",
     email: "charlie@example.com"
   })
 
-  const post1 = yield* postService.createPost({
+  const post1 = yield* postRepositoryService.createPost({
     userId: user1.id,
     title: "Effect Schema Benefits",
     content: "Schema validation at compile and runtime!"
   })
 
-  const post2 = yield* postService.createPost({
+  const post2 = yield* postRepositoryService.createPost({
     userId: user1.id,
     title: "Type Safety",
     content: null
@@ -200,10 +200,10 @@ const example3 = Effect.gen(function* () {
 
   console.log("✓ Created posts:", [post1.title, post2.title])
 
-  const allUsers = yield* userService.listUsers
+  const allUsers = yield* userRepositoryService.listUsers
   console.log(`✓ All users: ${allUsers.length} users`)
 
-  const userPosts = yield* postService.getPostsByUserId(user1.id)
+  const userPosts = yield* postRepositoryService.getPostsByUserId(user1.id)
   console.log(`✓ Posts by ${user1.name}: ${userPosts.length} posts`)
 
   console.log("\n--- Schema Types ---")
@@ -219,8 +219,8 @@ const runExample2 = example2.pipe(
 )
 
 const runExample3 = example3.pipe(
-  Effect.provide(UserService.Default),
-  Effect.provide(PostService.Default),
+  Effect.provide(UserRepositoryService.Default),
+  Effect.provide(PostRepositoryService.Default),
   Effect.provide(DB.Client)
 )
 
